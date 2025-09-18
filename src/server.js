@@ -1,14 +1,18 @@
 import express from 'express';
-import mongoose from 'mongoose';
+
 import cors from 'cors';
 import pino from 'pino-http';
-import dotenv from 'dotenv';
-import { getAllContacts, getContactById } from './services/contacts.js';
 
-dotenv.config(); /* завантажуємо змінну */
+import contactsRouter from './routes/contacts.js';
+import { getEnvVar } from './utils/getEnvVar.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+
+const PORT = Number(getEnvVar('PORT', '3000'));
 
 export const setupServer = () => {
   const app = express();
+
   app.use(express.json());
 
   app.use(cors());
@@ -20,44 +24,12 @@ export const setupServer = () => {
     }),
   );
 
-  app.get('/contacts', async (req, res) => {
-    const contacts = await getAllContacts();
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: contacts,
-    });
-  });
+  app.use('/contacts', contactsRouter);
 
-  app.get('/contacts/:contactId', async (req, res, next) => {
-    const { contactId } = req.params;
+  app.use(notFoundHandler);
 
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      /* Якщо ID не валідний — одразу 404 */
-      return res.status(404).json({ message: 'Contact not found' });
-    }
+  app.use(errorHandler);
 
-    const contact = await getContactById(contactId);
-
-    if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
-    }
-
-    res.status(200).json({
-      status: 200,
-      message: `Successfully found contact with id ${contactId}!`,
-      data: contact,
-    });
-  });
-
-  /*  Миделварка, маршрут для неіснуючих сторінок.  */
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
-  });
-
-  const PORT = Number(process.env.PORT) || 3000;
-
-  /*  Запуск сервера  */
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
