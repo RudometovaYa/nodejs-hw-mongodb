@@ -1,9 +1,11 @@
 import express from 'express';
 
+import routes from './routes/index.js';
+import cookieParser from 'cookie-parser';
+
 import cors from 'cors';
 import pino from 'pino-http';
 
-import contactsRouter from './routes/contacts.js';
 import { getEnvVar } from './utils/getEnvVar.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
@@ -24,7 +26,9 @@ export const setupServer = () => {
     }),
   );
 
-  app.use('/contacts', contactsRouter);
+  app.use(cookieParser());
+
+  app.use('/api', routes);
 
   app.use(notFoundHandler);
 

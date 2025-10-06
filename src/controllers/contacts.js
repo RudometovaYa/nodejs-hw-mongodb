@@ -25,6 +25,7 @@ export async function getAllContactsController(req, res) {
     hasNextPage,
     hasPreviousPage,
   } = await getAllContacts({
+    userId: req.user._id,
     page,
     perPage,
     sortBy,
@@ -55,7 +56,7 @@ export async function getContactByIdController(req, res, next) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const contact = await getContactById(contactId);
+  const contact = await getContactById(req.user._id, contactId);
 
   if (contact === null) {
     throw createHttpError.NotFound('Contact not found');
@@ -68,7 +69,7 @@ export async function getContactByIdController(req, res, next) {
 }
 
 export async function createContactController(req, res, next) {
-  const contact = await createContact(req.body);
+  const contact = await createContact(req.user._id, req.body);
   res.status(201).json({
     status: 201,
     message: 'Successfully created a contact!',
@@ -83,7 +84,7 @@ export async function updateContactController(req, res, next) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const contact = await updateContact(contactId, req.body);
+  const contact = await updateContact(req.user._id, contactId, req.body);
 
   if (contact === null) {
     throw new createHttpError.NotFound('Contact not found');
@@ -102,7 +103,7 @@ export async function deleteContactController(req, res, next) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const contact = await deleteContact(contactId);
+  const contact = await deleteContact(req.user._id, contactId);
 
   if (contact === null) {
     throw createHttpError(404, 'Contact not found');
