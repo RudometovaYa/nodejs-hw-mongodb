@@ -28,7 +28,7 @@ export const setupServer = () => {
 
   app.use(cookieParser());
 
-  app.use('/api', routes);
+  app.use(routes);
 
   app.use(notFoundHandler);
 
