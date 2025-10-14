@@ -12,6 +12,11 @@ const contactsSchema = new Schema(
       required: true,
       trim: true,
     },
+    photo: {
+      type: String,
+      require: false,
+      default: null,
+    },
     phoneNumber: {
       type: String,
       required: true,

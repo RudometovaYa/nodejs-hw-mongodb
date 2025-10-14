@@ -13,6 +13,11 @@ import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
 
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+
 export async function getAllContactsController(req, res) {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
@@ -69,7 +74,22 @@ export async function getContactByIdController(req, res, next) {
 }
 
 export async function createContactController(req, res, next) {
-  const contact = await createContact(req.user._id, req.body);
+  let photo;
+
+  if (getEnvVar('UPLOAD_CLOUDINARY') === 'true') {
+    const response = await saveFileToCloudinary(req.file.path);
+    await fs.unlink(req.file.path);
+    photo = response.secure_url;
+  } else {
+    await fs.rename(
+      req.file.path,
+      path.resolve('src/uploads/photo', req.file.filename),
+    );
+    photo = `http://localhost:3000/photo/${req.file.filename}`;
+  }
+
+  const contact = await createContact(req.user._id, { ...req.body, photo });
+
   res.status(201).json({
     status: 201,
     message: 'Successfully created a contact!',
@@ -80,16 +100,40 @@ export async function createContactController(req, res, next) {
 export async function updateContactController(req, res, next) {
   const { contactId } = req.params;
 
+  // Перевірка на валідність ObjectId
   if (!mongoose.isValidObjectId(contactId)) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const contact = await updateContact(req.user._id, contactId, req.body);
+  let photo;
+
+  // Якщо завантажено файл
+  if (req.file) {
+    if (getEnvVar('UPLOAD_CLOUDINARY') === 'true') {
+      const response = await saveFileToCloudinary(req.file.path);
+      await fs.unlink(req.file.path); // Видалити тимчасовий файл після завантаження
+      photo = response.secure_url;
+    } else {
+      await fs.rename(
+        req.file.path,
+        path.resolve('src/uploads/photo', req.file.filename),
+      );
+      photo = `http://localhost:3000/photo/${req.file.filename}`;
+    }
+  }
+
+  // Якщо є фото — додаємо до даних, інакше лише body
+  const updatedData = photo ? { ...req.body, photo } : req.body;
+
+  // Оновлення контакту
+  const contact = await updateContact(req.user._id, contactId, updatedData);
 
   if (contact === null) {
-    throw new createHttpError.NotFound('Contact not found');
+    throw createHttpError(404, 'Contact not found');
   }
-  res.json({
+
+  // Відповідь при успішному оновленні
+  res.status(200).json({
     status: 200,
     message: 'Successfully patched a contact!',
     data: contact,

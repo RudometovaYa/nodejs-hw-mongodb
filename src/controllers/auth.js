@@ -1,6 +1,6 @@
 import { registerUser, loginUser } from '../services/auth.js';
 import { refreshUsersSession } from '../services/auth.js';
-import { logoutUser } from '../services/auth.js';
+import { logoutUser, sendResetEmail, resetPwd } from '../services/auth.js';
 
 const setupSession = (res, session) => {
   const cookieOptions = {
@@ -65,3 +65,19 @@ export const logoutUserController = async (req, res) => {
 
   res.status(204).send();
 };
+
+export async function sendResetEmailController(req, res) {
+  await sendResetEmail(req.body.email);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Reset password email has been successfully sent.',
+    data: {},
+  });
+}
+
+export async function resetPwdController(req, res) {
+  await resetPwd(req.body.token, req.body.password);
+
+  res.json({ status: 200, message: 'Reset password successfully', data: {} });
+}
