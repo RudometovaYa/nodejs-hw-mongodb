@@ -51,8 +51,12 @@ export async function loginUser(email, password) {
     userId: user._id,
     accessToken: crypto.randomBytes(30).toString('base64'),
     refreshToken: crypto.randomBytes(30).toString('base64'),
-    accessTokenValidUntil: new Date(Date.now() + 15 * 60 * 1000),
-    refreshTokenValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    accessTokenValidUntil: new Date(
+      Date.now() + 215 * 60 * 1000,
+    ) /* потім заминити на це 15 * 60 * 1000 */,
+    refreshTokenValidUntil: new Date(
+      Date.now() + 230 * 24 * 60 * 60 * 1000,
+    ) /* потім заминити на це  30 * 24 * 60 * 60 * 1000 */,
   });
 }
 
