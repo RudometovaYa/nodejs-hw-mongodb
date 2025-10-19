@@ -1,0 +1,105 @@
+tags:
+  - Contacts
+summary: Update contact partially
+operationId: updateContact
+description: Updates a contact. Supports uploading a new photo.
+security:
+  - bearerAuth: []
+
+parameters:
+  - in: path
+    name: contactId
+    required: true
+    schema:
+      type: string
+    description: ID of the contact to update
+    example: 68efd41636a23320bb4ef586
+
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Contact's name
+            example: Jane Doe
+          phoneNumber:
+            type: string
+            description: Contact's phone number
+            example: '9876543210'
+          email:
+            type: string
+            format: email
+            description: Contact's email
+            example: jane.doe@example.com
+          photo:
+            type: string
+            format: binary
+            description: New photo file for the contact
+          isFavourite:
+            type: boolean
+            description: Mark contact as favorite
+            example: false
+          contactType:
+            type: string
+            enum: [work, home, personal]
+            description: Contact type
+            example: work
+
+responses:
+  '200':
+    description: Successfully updated the contact
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully patched a contact!
+            data:
+              $ref: ../../../components/schemas/contact.yaml
+
+  '400':
+    description: Invalid input data
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: Bad request - invalid input data
+
+  '404':
+    description: Contact not found
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 404
+            message:
+              type: string
+              example: Contact not found

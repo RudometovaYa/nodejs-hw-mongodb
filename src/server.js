@@ -10,6 +10,14 @@ import { getEnvVar } from './utils/getEnvVar.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
+import * as fs from 'node:fs';
+import path from 'node:path';
+import swaggerUI from 'swagger-ui-express';
+
+const SWAGGER_DOCUMENT = JSON.parse(
+  fs.readFileSync(path.join('docs', 'swagger.json')),
+);
+
 const PORT = Number(getEnvVar('PORT', '3000'));
 
 export const setupServer = () => {
@@ -25,6 +33,8 @@ export const setupServer = () => {
       },
     }),
   );
+
+  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOCUMENT));
 
   app.use(cookieParser());
 
