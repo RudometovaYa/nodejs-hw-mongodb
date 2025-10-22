@@ -34,7 +34,7 @@ export const setupServer = () => {
     }),
   );
 
-  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOCUMENT));
+  app.use('/', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOCUMENT));
 
   app.use(cookieParser());
 
