@@ -1,0 +1,84 @@
+tags:
+  - Contacts
+summary: Create a new contact
+operationId: createContact
+description: Creates a new contact. Supports uploading a photo as a file.
+security:
+  - bearerAuth: []
+
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Contact's name
+            example: John Deere
+          phoneNumber:
+            type: string
+            description: Contact's phone number
+            example: '1234567890'
+          email:
+            type: string
+            format: email
+            description: Contact's email
+            example: john.deere@example.com
+          photo:
+            type: string
+            format: binary
+            description: Photo file of the contact
+          isFavourite:
+            type: boolean
+            description: Is contact marked as favorite
+            default: false
+            example: true
+          contactType:
+            type: string
+            description: Type of contact
+            enum: [work, home, personal]
+            default: personal
+            example: personal
+        required:
+          - name
+          - phoneNumber
+
+responses:
+  '201':
+    description: Successfully created a contact
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 201
+            message:
+              type: string
+              example: Successfully created a contact!
+            data:
+              $ref: ../../components/schemas/contact.yaml
+
+  '400':
+    description: Invalid input data
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: Bad request - invalid input data
